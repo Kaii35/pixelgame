@@ -25,6 +25,20 @@ export const ChangeEmoteSchema = z.object({
 });
 export type ChangeEmote = z.infer<typeof ChangeEmoteSchema>;
 
+export const PlaceFurnitureSchema = z.object({
+  kind: z.string().min(1).max(40),
+  tile: z.object({
+    x: z.number().int().min(0).max(255),
+    y: z.number().int().min(0).max(255),
+  }),
+});
+export type PlaceFurniture = z.infer<typeof PlaceFurnitureSchema>;
+
+export const RemoveFurnitureSchema = z.object({
+  furnitureId: z.string().min(1).max(64),
+});
+export type RemoveFurniture = z.infer<typeof RemoveFurnitureSchema>;
+
 export const PingSchema = z.object({
   clientTime: z.number().int().nonnegative(),
 });

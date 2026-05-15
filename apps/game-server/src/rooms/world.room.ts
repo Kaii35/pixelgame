@@ -3,7 +3,9 @@ import {
   CLIENT_MESSAGE,
   ChatSendSchema,
   MoveIntentSchema,
+  PlaceFurnitureSchema,
   PlayerState,
+  RemoveFurnitureSchema,
   TileVec,
   WorldRoomState,
 } from '@pixelgame/networking';
@@ -11,6 +13,7 @@ import {
 import { verifyAccessToken, type VerifiedToken } from '../auth/jwt-verifier';
 import { defaultLayout } from '../domain/world-layout';
 import { ChatSystem } from '../systems/chat.system';
+import { DecorationSystem } from '../systems/decoration.system';
 import { MovementSystem } from '../systems/movement.system';
 
 import type { RoomLayout } from '@pixelgame/shared-types';
@@ -27,6 +30,7 @@ export class WorldRoom extends Room<WorldRoomState> {
 
   private movement!: MovementSystem;
   private chat!: ChatSystem;
+  private decoration!: DecorationSystem;
   private layout!: RoomLayout;
 
   override onCreate(options: { roomId?: string; name?: string }): void {
@@ -38,6 +42,7 @@ export class WorldRoom extends Room<WorldRoomState> {
 
     this.movement = new MovementSystem(this.state, this.layout);
     this.chat = new ChatSystem(this.state, (type, payload) => this.broadcast(type, payload));
+    this.decoration = new DecorationSystem(this.state, this.layout);
 
     this.onMessage(CLIENT_MESSAGE.MOVE_INTENT, (client, payload) => {
       const parsed = MoveIntentSchema.safeParse(payload);
@@ -51,6 +56,22 @@ export class WorldRoom extends Room<WorldRoomState> {
       const author = client.userData as VerifiedToken | undefined;
       if (!author) return;
       this.chat.broadcast(author, parsed.data.body, client.sessionId);
+    });
+
+    this.onMessage(CLIENT_MESSAGE.PLACE_FURNITURE, (client, payload) => {
+      const parsed = PlaceFurnitureSchema.safeParse(payload);
+      if (!parsed.success) return;
+      const author = client.userData as VerifiedToken | undefined;
+      if (!author) return;
+      this.decoration.place(client.sessionId, author, parsed.data);
+    });
+
+    this.onMessage(CLIENT_MESSAGE.REMOVE_FURNITURE, (client, payload) => {
+      const parsed = RemoveFurnitureSchema.safeParse(payload);
+      if (!parsed.success) return;
+      const author = client.userData as VerifiedToken | undefined;
+      if (!author) return;
+      this.decoration.remove(client.sessionId, author, parsed.data.furnitureId);
     });
 
     this.setSimulationInterval(this.tick.bind(this), 1000 / TICK_HZ);
@@ -74,6 +95,7 @@ export class WorldRoom extends Room<WorldRoomState> {
   override onLeave(client: Client): void {
     this.movement.onLeave(client.sessionId);
     this.chat.onLeave(client.sessionId);
+    this.decoration.onLeave(client.sessionId);
     this.state.players.delete(client.sessionId);
   }
 

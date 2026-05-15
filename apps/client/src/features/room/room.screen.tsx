@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { PhaserGame } from '../../engine/PhaserGame';
 import { useRoomStore } from '../../state/room.store';
 import { ChatPanel } from '../chat/chat.panel';
+import { DecoratePanel } from '../decorate/decorate.panel';
 
 import { useWorldRoom } from './use-world-room';
 
@@ -12,6 +14,18 @@ export const RoomScreen = (): JSX.Element => {
   const safeRoomId = roomId ?? '';
   const { status, error } = useWorldRoom(safeRoomId);
   const playerCount = useRoomStore((s) => Object.keys(s.players).length);
+  const editMode = useRoomStore((s) => s.editMode);
+  const setEditMode = useRoomStore((s) => s.setEditMode);
+
+  // ESC exits edit mode.
+  useEffect(() => {
+    if (!editMode) return;
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') setEditMode(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [editMode, setEditMode]);
 
   const statusDotColor =
     status === 'connected' ? 'bg-moss' : status === 'connecting' ? 'bg-sun' : 'bg-magenta';
@@ -27,6 +41,14 @@ export const RoomScreen = (): JSX.Element => {
       <div className="absolute inset-0">
         <PhaserGame />
       </div>
+
+      {/* Edit-mode visual ring */}
+      {editMode ? (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 ring-2 ring-inset ring-cyan/40 animate-fade-in"
+        />
+      ) : null}
 
       {/* Top-left: room identity */}
       <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-2 animate-fade-in">
@@ -44,6 +66,12 @@ export const RoomScreen = (): JSX.Element => {
           </svg>
           <span className="text-ink-50">{playerCount}</span>
         </div>
+        {editMode ? (
+          <div className="chip glass">
+            <span className="chip-dot bg-cyan animate-pulse-soft" />
+            <span className="text-ink-50">Modo decorar</span>
+          </div>
+        ) : null}
       </div>
 
       {/* Top-right: leave */}
@@ -65,13 +93,19 @@ export const RoomScreen = (): JSX.Element => {
         </button>
       </div>
 
-      {/* Bottom-left: action shelf (placeholder) */}
+      {/* Bottom-left: action shelf */}
       <div className="absolute bottom-4 left-4 flex items-center gap-2 animate-fade-in">
         <ActionPill icon="🎒" label="Inventario" disabled />
-        <ActionPill icon="🛠" label="Decorar" disabled />
+        <ActionPill
+          icon="🛠"
+          label={editMode ? 'Cerrar' : 'Decorar'}
+          active={editMode}
+          onClick={() => setEditMode(!editMode)}
+        />
         <ActionPill icon="⚙" label="Ajustes" disabled />
       </div>
 
+      <DecoratePanel />
       <ChatPanel />
     </div>
   );
@@ -81,16 +115,21 @@ interface ActionPillProps {
   icon: string;
   label: string;
   disabled?: boolean;
+  active?: boolean;
+  onClick?: () => void;
 }
 
-const ActionPill = ({ icon, label, disabled }: ActionPillProps): JSX.Element => (
+const ActionPill = ({ icon, label, disabled, active, onClick }: ActionPillProps): JSX.Element => (
   <button
     type="button"
     disabled={disabled}
-    className="chip glass disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/5 transition-colors"
+    onClick={onClick}
+    className={`chip glass disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
+      active ? 'ring-1 ring-cyan/60 bg-cyan/10' : 'hover:bg-white/5'
+    }`}
     title={disabled ? 'Próximamente' : label}
   >
     <span aria-hidden="true">{icon}</span>
-    <span className="text-ink-50">{label}</span>
+    <span className={active ? 'text-cyan' : 'text-ink-50'}>{label}</span>
   </button>
 );

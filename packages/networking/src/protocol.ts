@@ -2,7 +2,7 @@
  * Wire protocol constants shared by client and server.
  * Increment PROTOCOL_VERSION on any breaking change to message shapes.
  */
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2;
 
 export const ROOM_NAMES = {
   LOBBY: 'lobby',
@@ -15,6 +15,8 @@ export const CLIENT_MESSAGE = {
   CHAT_SEND: 'chat_send',
   INTERACT: 'interact',
   CHANGE_EMOTE: 'change_emote',
+  PLACE_FURNITURE: 'place_furniture',
+  REMOVE_FURNITURE: 'remove_furniture',
   PING: 'ping',
 } as const;
 export type ClientMessageType = (typeof CLIENT_MESSAGE)[keyof typeof CLIENT_MESSAGE];

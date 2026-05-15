@@ -79,6 +79,20 @@ export const useWorldRoom = (roomId: string): UseWorldRoomResult => {
           useRoomStore.getState().removePlayer(sessionId);
         });
 
+        $(room.state).furniture.onAdd((piece, id) => {
+          useRoomStore.getState().upsertFurniture({
+            id,
+            kind: piece.kind,
+            tile: { x: piece.tile.x, y: piece.tile.y },
+            ownerId: piece.ownerId,
+            placedAt: piece.placedAt,
+          });
+        });
+
+        $(room.state).furniture.onRemove((_piece, id) => {
+          useRoomStore.getState().removeFurniture(id);
+        });
+
         room.onMessage<ChatBroadcast>(SERVER_MESSAGE.CHAT_BROADCAST, (msg) => {
           useRoomStore.getState().appendChat(msg);
         });
@@ -88,6 +102,8 @@ export const useWorldRoom = (roomId: string): UseWorldRoomResult => {
           s2.setConnected(false, null, null);
           s2.setSendMoveIntent(null);
           s2.setSendChat(null);
+          s2.setSendPlaceFurniture(null);
+          s2.setSendRemoveFurniture(null);
         });
 
         room.onError((_code, message) => {
@@ -103,6 +119,12 @@ export const useWorldRoom = (roomId: string): UseWorldRoomResult => {
         });
         store.setSendChat((body) => {
           room.send(CLIENT_MESSAGE.CHAT_SEND, { body });
+        });
+        store.setSendPlaceFurniture((kind, tile) => {
+          room.send(CLIENT_MESSAGE.PLACE_FURNITURE, { kind, tile });
+        });
+        store.setSendRemoveFurniture((furnitureId) => {
+          room.send(CLIENT_MESSAGE.REMOVE_FURNITURE, { furnitureId });
         });
 
         store.setConnected(true, room.sessionId, roomId);
@@ -121,6 +143,8 @@ export const useWorldRoom = (roomId: string): UseWorldRoomResult => {
       const s = useRoomStore.getState();
       s.setSendMoveIntent(null);
       s.setSendChat(null);
+      s.setSendPlaceFurniture(null);
+      s.setSendRemoveFurniture(null);
       if (joinedRoom) {
         joinedRoom.leave();
       }

@@ -4,6 +4,7 @@ import Phaser from 'phaser';
 import { useRoomStore, type RoomLayoutSnapshot } from '../../state/room.store';
 import { installTilePicker } from '../input/tile-picker';
 import { drawFloor } from '../systems/floor.renderer';
+import { FurnitureSyncSystem } from '../systems/furniture-sync.system';
 import { PlayerSyncSystem } from '../systems/player-sync.system';
 import { AMBIENT, PALETTE, SUN, VIGNETTE } from '../theme';
 
@@ -26,6 +27,7 @@ export class RoomScene extends Phaser.Scene {
   private sun: Phaser.GameObjects.Arc | null = null;
   private floor: Phaser.GameObjects.Graphics | null = null;
   private playerSync!: PlayerSyncSystem;
+  private furnitureSync!: FurnitureSyncSystem;
   private uninstallPicker: (() => void) | null = null;
   private unsubscribeStore: (() => void) | null = null;
 
@@ -49,6 +51,7 @@ export class RoomScene extends Phaser.Scene {
     // (≤ 20×20 tiles) the whole grid fits in any reasonable viewport.
     this.world = this.add.container(this.scale.width / 2, this.scale.height / 2);
     this.playerSync = new PlayerSyncSystem(this, this.world);
+    this.furnitureSync = new FurnitureSyncSystem(this, this.world);
 
     this.buildAmbient();
     this.buildVignette();
@@ -56,6 +59,7 @@ export class RoomScene extends Phaser.Scene {
     const initial = useRoomStore.getState();
     if (initial.layout) this.applyLayout(initial.layout);
     this.playerSync.sync(initial.players);
+    this.furnitureSync.sync(initial.furniture);
     this.lastSeenChatIndex = initial.chatHistory.length;
     this.prevMySessionId = initial.mySessionId;
 
@@ -65,6 +69,7 @@ export class RoomScene extends Phaser.Scene {
         else this.clearLayout();
       }
       this.playerSync.sync(state.players);
+      this.furnitureSync.sync(state.furniture);
 
       if (state.chatHistory.length > this.lastSeenChatIndex) {
         for (let i = this.lastSeenChatIndex; i < state.chatHistory.length; i++) {
@@ -223,6 +228,7 @@ export class RoomScene extends Phaser.Scene {
     if (this.ambient) this.ambient.destroy();
     if (this.vignette) this.vignette.destroy();
     if (this.playerSync) this.playerSync.destroyAll();
+    if (this.furnitureSync) this.furnitureSync.destroyAll();
     this.floor = null;
     this.sun = null;
     this.prevLayout = null;

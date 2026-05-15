@@ -16,6 +16,18 @@ export class PlayerState extends Schema {
   @type('number') lastUpdate = 0;
 }
 
+/**
+ * Furniture piece placed in a room. `kind` is a catalog id resolved by both
+ * client and server via @pixelgame/game-core/catalog.
+ */
+export class FurniturePiece extends Schema {
+  @type('string') id = '';
+  @type('string') kind = '';
+  @type(TileVec) tile = new TileVec();
+  @type('string') ownerId = '';
+  @type('number') placedAt = 0;
+}
+
 /** Lightweight chat history kept in room state for late joiners. */
 export class ChatEntry extends Schema {
   @type('string') id = '';
@@ -30,6 +42,7 @@ export class WorldRoomState extends Schema {
   @type('string') roomId = '';
   @type('string') name = '';
   @type({ map: PlayerState }) players = new MapSchema<PlayerState>();
+  @type({ map: FurniturePiece }) furniture = new MapSchema<FurniturePiece>();
   @type([ChatEntry]) chatHistory = new ArraySchema<ChatEntry>();
   @type('number') tick = 0;
 }

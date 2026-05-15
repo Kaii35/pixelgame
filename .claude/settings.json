@@ -25,7 +25,15 @@
       "Bash(curl -s -o /dev/null -w \"api %{http_code}\\\\n\" http://localhost:3001/api/v1/health)",
       "Bash(curl -s -o /dev/null -w \"game %{http_code}\\\\n\" http://localhost:2567/health)",
       "Bash(curl -s http://localhost:5173/src/index.css)",
-      "PowerShell(Get-Process -Name node -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -gt \\(Get-Date \"10:55:00\"\\) } | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }; Start-Sleep -Seconds 1; \"cleaned\")"
+      "PowerShell(Get-Process -Name node -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -gt \\(Get-Date \"10:55:00\"\\) } | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }; Start-Sleep -Seconds 1; \"cleaned\")",
+      "Bash(curl -s -o /dev/null -w \"client  %{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(curl -s -o /dev/null -w \"api     %{http_code}\\\\n\" http://localhost:3001/api/v1/health)",
+      "Bash(curl -s -o /dev/null -w \"game    %{http_code}\\\\n\" http://localhost:2567/health)",
+      "Bash(pnpm --filter @pixelgame/api typecheck)",
+      "PowerShell(Get-Process -Name node -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -gt \\(Get-Date \"11:00:00\"\\) } | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }; Start-Sleep -Seconds 1; \"---ports---\"; Get-NetTCPConnection -LocalPort 5173,3001,2567 -State Listen -ErrorAction SilentlyContinue | Format-Table -AutoSize)",
+      "Bash(pnpm --filter @pixelgame/game-core build)",
+      "Bash(curl -s -o /dev/null -w \"api    %{http_code}\\\\n\" http://localhost:3001/api/v1/health)",
+      "Bash(curl -s -o /dev/null -w \"game   %{http_code}\\\\n\" http://localhost:2567/health)"
     ],
     "additionalDirectories": ["c:\\Users\\USER\\AppData\\Local\\Temp"]
   }
