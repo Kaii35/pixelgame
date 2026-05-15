@@ -1,4 +1,3 @@
-import { Button } from '@pixelgame/shared-ui';
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -16,32 +15,38 @@ export const RegisterScreen = (): JSX.Element => {
   };
 
   return (
-    <main className="flex h-full items-center justify-center px-6">
+    <main className="relative flex h-full items-center justify-center overflow-hidden px-6">
+      <Backdrop />
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md rounded-lg bg-slate-900/80 p-8 shadow-xl ring-1 ring-slate-800"
+        className="relative w-full max-w-sm glass-strong rounded-3xl p-8 animate-fade-in"
       >
-        <h1 className="mb-6 text-2xl font-bold text-slate-100">Create an account</h1>
-        <div className="mb-4">
-          <label className="mb-1 block text-sm font-medium text-slate-300" htmlFor="email">
-            Email
-          </label>
+        <div className="mb-6 text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan to-moss mb-3 shadow-[0_0_24px_-4px_rgba(127,223,255,0.45)]">
+            <span className="text-2xl">✿</span>
+          </div>
+          <h1 className="font-display text-2xl font-semibold text-ink-50">Crea tu cuenta</h1>
+          <p className="mt-1 text-sm text-ink-300">Empieza tu primera sala</p>
+        </div>
+
+        <label className="block">
+          <span className="text-xs font-medium uppercase tracking-wider text-ink-300">Email</span>
           <input
-            id="email"
             type="email"
             required
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md bg-slate-800 px-3 py-2 text-slate-100 outline-none ring-1 ring-slate-700 focus:ring-indigo-500"
+            className="field mt-1.5"
+            placeholder="tu@email.com"
           />
-        </div>
-        <div className="mb-4">
-          <label className="mb-1 block text-sm font-medium text-slate-300" htmlFor="username">
-            Username
-          </label>
+        </label>
+
+        <label className="block mt-4">
+          <span className="text-xs font-medium uppercase tracking-wider text-ink-300">
+            Nombre de usuario
+          </span>
           <input
-            id="username"
             type="text"
             required
             autoComplete="username"
@@ -49,43 +54,59 @@ export const RegisterScreen = (): JSX.Element => {
             maxLength={20}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full rounded-md bg-slate-800 px-3 py-2 text-slate-100 outline-none ring-1 ring-slate-700 focus:ring-indigo-500"
+            className="field mt-1.5"
+            placeholder="elektra"
           />
-        </div>
-        <div className="mb-6">
-          <label className="mb-1 block text-sm font-medium text-slate-300" htmlFor="password">
-            Password
-          </label>
+        </label>
+
+        <label className="block mt-4">
+          <span className="text-xs font-medium uppercase tracking-wider text-ink-300">
+            Contraseña
+          </span>
           <input
-            id="password"
             type="password"
             required
             autoComplete="new-password"
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md bg-slate-800 px-3 py-2 text-slate-100 outline-none ring-1 ring-slate-700 focus:ring-indigo-500"
+            className="field mt-1.5"
+            placeholder="mínimo 8 caracteres"
           />
-        </div>
+        </label>
+
         {mutation.isError ? (
-          <p className="mb-4 text-sm text-rose-400">Registration failed. Please try again.</p>
+          <p className="mt-4 text-sm text-magenta text-center animate-fade-in">
+            No pudimos crear la cuenta. Verifica los datos.
+          </p>
         ) : null}
-        <Button
+
+        <button
           type="submit"
-          variant="primary"
-          size="md"
-          className="w-full"
           disabled={mutation.isPending}
+          className="btn-primary w-full mt-6 py-2.5"
         >
-          {mutation.isPending ? 'Creating account…' : 'Create account'}
-        </Button>
-        <p className="mt-6 text-center text-sm text-slate-400">
-          Already have an account?{' '}
-          <Link to="/login" className="text-indigo-400 hover:text-indigo-300">
-            Sign in
+          {mutation.isPending ? 'Creando…' : 'Crear cuenta'}
+        </button>
+
+        <p className="mt-6 text-center text-sm text-ink-300">
+          ¿Ya tienes cuenta?{' '}
+          <Link to="/login" className="text-sun hover:text-cream transition-colors">
+            Entra aquí
           </Link>
         </p>
       </form>
     </main>
   );
 };
+
+const Backdrop = (): JSX.Element => (
+  <div
+    aria-hidden="true"
+    className="absolute inset-0 pointer-events-none"
+    style={{
+      background:
+        'radial-gradient(ellipse at 30% 20%, rgba(127,223,255,0.18) 0%, transparent 55%), radial-gradient(ellipse at 75% 80%, rgba(255,184,107,0.10) 0%, transparent 55%)',
+    }}
+  />
+);

@@ -1,4 +1,3 @@
-import { Button } from '@pixelgame/shared-ui';
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -15,59 +14,80 @@ export const LoginScreen = (): JSX.Element => {
   };
 
   return (
-    <main className="flex h-full items-center justify-center px-6">
+    <main className="relative flex h-full items-center justify-center overflow-hidden px-6">
+      <AuthBackdrop />
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md rounded-lg bg-slate-900/80 p-8 shadow-xl ring-1 ring-slate-800"
+        className="relative w-full max-w-sm glass-strong rounded-3xl p-8 animate-fade-in"
       >
-        <h1 className="mb-6 text-2xl font-bold text-slate-100">Welcome back</h1>
-        <div className="mb-4">
-          <label className="mb-1 block text-sm font-medium text-slate-300" htmlFor="email">
-            Email
-          </label>
+        <div className="mb-6 text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-sun to-amber mb-3 shadow-glow">
+            <span className="text-2xl">✦</span>
+          </div>
+          <h1 className="font-display text-2xl font-semibold text-ink-50">Bienvenido</h1>
+          <p className="mt-1 text-sm text-ink-300">Entra para reunirte con todos</p>
+        </div>
+
+        <label className="block">
+          <span className="text-xs font-medium uppercase tracking-wider text-ink-300">Email</span>
           <input
-            id="email"
             type="email"
             required
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md bg-slate-800 px-3 py-2 text-slate-100 outline-none ring-1 ring-slate-700 focus:ring-indigo-500"
+            className="field mt-1.5"
+            placeholder="tu@email.com"
           />
-        </div>
-        <div className="mb-6">
-          <label className="mb-1 block text-sm font-medium text-slate-300" htmlFor="password">
-            Password
-          </label>
+        </label>
+
+        <label className="block mt-4">
+          <span className="text-xs font-medium uppercase tracking-wider text-ink-300">
+            Contraseña
+          </span>
           <input
-            id="password"
             type="password"
             required
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md bg-slate-800 px-3 py-2 text-slate-100 outline-none ring-1 ring-slate-700 focus:ring-indigo-500"
+            className="field mt-1.5"
+            placeholder="••••••••"
           />
-        </div>
+        </label>
+
         {mutation.isError ? (
-          <p className="mb-4 text-sm text-rose-400">Login failed. Please try again.</p>
+          <p className="mt-4 text-sm text-magenta text-center animate-fade-in">
+            No pudimos iniciar sesión. Verifica tus credenciales.
+          </p>
         ) : null}
-        <Button
+
+        <button
           type="submit"
-          variant="primary"
-          size="md"
-          className="w-full"
           disabled={mutation.isPending}
+          className="btn-primary w-full mt-6 py-2.5"
         >
-          {mutation.isPending ? 'Signing in…' : 'Sign in'}
-        </Button>
-        <p className="mt-6 text-center text-sm text-slate-400">
-          Don&apos;t have an account?{' '}
-          <Link to="/register" className="text-indigo-400 hover:text-indigo-300">
-            Register
+          {mutation.isPending ? 'Entrando…' : 'Entrar'}
+        </button>
+
+        <p className="mt-6 text-center text-sm text-ink-300">
+          ¿Aún no tienes cuenta?{' '}
+          <Link to="/register" className="text-sun hover:text-cream transition-colors">
+            Crear una
           </Link>
         </p>
       </form>
     </main>
   );
 };
+
+const AuthBackdrop = (): JSX.Element => (
+  <div
+    aria-hidden="true"
+    className="absolute inset-0 pointer-events-none"
+    style={{
+      background:
+        'radial-gradient(ellipse at 70% 20%, rgba(255,184,107,0.18) 0%, transparent 55%), radial-gradient(ellipse at 25% 85%, rgba(127,223,255,0.10) 0%, transparent 55%)',
+    }}
+  />
+);

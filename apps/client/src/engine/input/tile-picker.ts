@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
 import { useRoomStore, type RoomLayoutSnapshot } from '../../state/room.store';
+import { spawnClickRing } from '../effects/click-feedback';
 import { screenToTile } from '../lib/iso-screen';
 
 /**
@@ -23,7 +24,10 @@ export const installTilePicker = (
       return;
     }
     const send = useRoomStore.getState().sendMoveIntent;
-    if (send) send(tile);
+    if (send) {
+      send(tile);
+      spawnClickRing(scene, world, tile);
+    }
   };
 
   scene.input.on(Phaser.Input.Events.POINTER_DOWN, handler);
