@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /b \"c:\\\\Users\\\\USER\\\\Desktop\\\\pixelgame\")",
+      "Bash(dir /b /a)",
+      "PowerShell(Get-ChildItem -Recurse -File | Measure-Object | Select-Object -ExpandProperty Count; Get-ChildItem -Recurse -Directory | Where-Object { $_.Name -notmatch '^\\(node_modules|\\\\.git\\)$' } | Select-Object FullName | Sort-Object FullName | Format-Table -AutoSize -Wrap)",
+      "PowerShell(gh --version 2>$null)",
+      "PowerShell(git config --global user.name)",
+      "PowerShell(git config --global user.email)",
+      "PowerShell(git ls-remote https://github.com/Kaii35/pixelgame.git 2>&1)",
+      "PowerShell(git init -b main; git add .; git status --short | Select-Object -First 30; \"---\"; \"TOTAL FILES STAGED:\"; \\(git status --short | Measure-Object\\).Count)"
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+import { loadEnv, NodeEnvSchema } from '@pixelgame/shared-config';
+import { z } from 'zod';
+
+const ApiEnvSchema = z.object({
+  NODE_ENV: NodeEnvSchema,
+  API_PORT: z.coerce.number().int().positive().default(3001),
+  API_HOST: z.string().default('0.0.0.0'),
+  API_CORS_ORIGIN: z.string().default('http://localhost:5173'),
+
+  DATABASE_URL: z.string().url(),
+  REDIS_URL: z.string().url(),
+
+  JWT_PRIVATE_KEY_PATH: z.string(),
+  JWT_PUBLIC_KEY_PATH: z.string(),
+  JWT_ACCESS_TTL: z.string().default('15m'),
+  JWT_REFRESH_TTL: z.string().default('7d'),
+  JWT_ISSUER: z.string().default('pixelgame'),
+  JWT_AUDIENCE: z.string().default('pixelgame-client'),
+});
+
+export type ApiEnv = z.infer<typeof ApiEnvSchema>;
+
+export const loadApiEnv = (): ApiEnv => loadEnv(ApiEnvSchema);

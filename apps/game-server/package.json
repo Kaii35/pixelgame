@@ -1,0 +1,43 @@
+{
+  "name": "@pixelgame/game-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pixelgame Colyseus realtime server — authoritative rooms.",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/index.js",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@colyseus/core": "^0.16.0",
+    "@colyseus/monitor": "^0.16.0",
+    "@colyseus/redis-driver": "^0.16.0",
+    "@colyseus/redis-presence": "^0.16.0",
+    "@colyseus/schema": "^3.0.0",
+    "@colyseus/ws-transport": "^0.16.0",
+    "@pixelgame/game-core": "workspace:*",
+    "@pixelgame/networking": "workspace:*",
+    "@pixelgame/shared-config": "workspace:*",
+    "@pixelgame/shared-types": "workspace:*",
+    "@prisma/client": "^5.20.0",
+    "colyseus": "^0.16.0",
+    "express": "^4.21.0",
+    "ioredis": "^5.4.1",
+    "jose": "^5.9.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@pixelgame/eslint-config": "workspace:*",
+    "@pixelgame/ts-config": "workspace:*",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.16.10",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.1"
+  }
+}

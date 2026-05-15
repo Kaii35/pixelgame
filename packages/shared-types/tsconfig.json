@@ -1,0 +1,4 @@
+{
+  "extends": "@pixelgame/ts-config/library.json",
+  "include": ["src"]
+}

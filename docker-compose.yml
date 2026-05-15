@@ -1,0 +1,95 @@
+###############################################################################
+#  Pixelgame — local development infrastructure
+#  Apps run on the host (pnpm dev); only stateful services run here.
+###############################################################################
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pixelgame-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pixelgame}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pixelgame_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-pixelgame}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pixelgame}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: pixelgame-redis
+    restart: unless-stopped
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+      - ./infrastructure/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # The following service profiles are opt-in for full-stack docker runs:
+  #   docker compose --profile full up
+  api:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: infrastructure/docker/api.Dockerfile
+    container_name: pixelgame-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-pixelgame}:${POSTGRES_PASSWORD:-pixelgame_dev_password}@postgres:5432/${POSTGRES_DB:-pixelgame}?schema=public
+      REDIS_URL: redis://redis:6379
+      API_PORT: 3001
+    ports:
+      - "3001:3001"
+
+  game-server:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: infrastructure/docker/game-server.Dockerfile
+    container_name: pixelgame-game-server
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-pixelgame}:${POSTGRES_PASSWORD:-pixelgame_dev_password}@postgres:5432/${POSTGRES_DB:-pixelgame}?schema=public
+      REDIS_URL: redis://redis:6379
+      GAME_SERVER_PORT: 2567
+    ports:
+      - "2567:2567"
+
+  client:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: infrastructure/docker/client.Dockerfile
+    container_name: pixelgame-client
+    depends_on:
+      - api
+      - game-server
+    ports:
+      - "5173:80"
+
+volumes:
+  postgres-data:
+  redis-data:

@@ -1,0 +1,71 @@
+// Prisma schema for Pixelgame API
+// Migrations: `pnpm --filter @pixelgame/api prisma:migrate`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique @db.VarChar(254)
+  username     String   @unique @db.VarChar(20)
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  bannedAt     DateTime? @map("banned_at")
+
+  avatar        Avatar?
+  refreshTokens RefreshToken[]
+  ownedRooms    Room[]         @relation("RoomOwner")
+
+  @@map("users")
+}
+
+model Avatar {
+  id         String   @id @default(uuid()) @db.Uuid
+  ownerId    String   @unique @map("owner_id") @db.Uuid
+  bodyColor  String   @default("#f1c27d") @map("body_color") @db.VarChar(7)
+  shirtColor String   @default("#3478f6") @map("shirt_color") @db.VarChar(7)
+  pantsColor String   @default("#1f2937") @map("pants_color") @db.VarChar(7)
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@map("avatars")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tokenHash String   @unique @map("token_hash")
+  familyId  String   @map("family_id") @db.Uuid
+  expiresAt DateTime @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_tokens")
+}
+
+model Room {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(64)
+  ownerId   String?  @map("owner_id") @db.Uuid
+  capacity  Int      @default(20)
+  layout    Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  owner User? @relation("RoomOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
+  @@index([ownerId])
+  @@map("rooms")
+}

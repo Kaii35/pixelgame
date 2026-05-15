@@ -1,0 +1,40 @@
+module.exports = {
+  extends: ['@commitlint/config-conventional'],
+  rules: {
+    'type-enum': [
+      2,
+      'always',
+      [
+        'feat',
+        'fix',
+        'docs',
+        'style',
+        'refactor',
+        'perf',
+        'test',
+        'build',
+        'ci',
+        'chore',
+        'revert',
+      ],
+    ],
+    'scope-enum': [
+      2,
+      'always',
+      [
+        'client',
+        'api',
+        'game-server',
+        'shared-types',
+        'networking',
+        'game-core',
+        'shared-ui',
+        'shared-config',
+        'infra',
+        'docs',
+        'repo',
+      ],
+    ],
+    'subject-case': [2, 'never', ['upper-case', 'pascal-case', 'start-case']],
+  },
+};
