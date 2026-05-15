@@ -5,7 +5,7 @@ import { useRoomStore, type RoomLayoutSnapshot } from '../../state/room.store';
 import { installTilePicker } from '../input/tile-picker';
 import { drawFloor } from '../systems/floor.renderer';
 import { PlayerSyncSystem } from '../systems/player-sync.system';
-import { AMBIENT, CAMERA, PALETTE, SUN, VIGNETTE } from '../theme';
+import { AMBIENT, PALETTE, SUN, VIGNETTE } from '../theme';
 
 /**
  * Long-lived room scene. Owns the world container, floor graphics,
@@ -32,7 +32,6 @@ export class RoomScene extends Phaser.Scene {
   private prevLayout: RoomLayoutSnapshot | null = null;
   private prevMySessionId: string | null = null;
   private lastSeenChatIndex = 0;
-  private isFollowingMe = false;
 
   constructor() {
     super('Room');
@@ -40,11 +39,15 @@ export class RoomScene extends Phaser.Scene {
 
   create(): void {
     this.cameras.main.setBackgroundColor(PALETTE.void);
-    this.cameras.main.setZoom(CAMERA.zoom);
 
     this.buildSky();
 
-    this.world = this.add.container(this.scale.width / 2, this.scale.height / 4);
+    // World container — its position is recentered as soon as we know the
+    // layout dimensions (see recenterWorld). We do NOT attach the camera
+    // follow to avatars: their `container.x/y` are LOCAL to this container,
+    // so startFollow would scroll the world off-screen. For MVP-sized rooms
+    // (≤ 20×20 tiles) the whole grid fits in any reasonable viewport.
+    this.world = this.add.container(this.scale.width / 2, this.scale.height / 2);
     this.playerSync = new PlayerSyncSystem(this, this.world);
 
     this.buildAmbient();
@@ -55,7 +58,6 @@ export class RoomScene extends Phaser.Scene {
     this.playerSync.sync(initial.players);
     this.lastSeenChatIndex = initial.chatHistory.length;
     this.prevMySessionId = initial.mySessionId;
-    this.maybeFollowSelf(initial.mySessionId);
 
     this.unsubscribeStore = useRoomStore.subscribe((state) => {
       if (state.layout !== this.prevLayout) {
@@ -75,14 +77,24 @@ export class RoomScene extends Phaser.Scene {
 
       if (state.mySessionId !== this.prevMySessionId) {
         this.prevMySessionId = state.mySessionId;
-        this.isFollowingMe = false;
       }
-      this.maybeFollowSelf(state.mySessionId);
     });
 
     this.scale.on(Phaser.Scale.Events.RESIZE, this.handleResize, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
     this.events.once(Phaser.Scenes.Events.DESTROY, this.shutdown, this);
+  }
+
+  /**
+   * Position the world container so the iso diamond is centered on screen.
+   * The diamond top vertex is at container origin and extends down by
+   * (width + height) * halfH. To center it we offset by half of that.
+   */
+  private recenterWorld(layout: RoomLayoutSnapshot): void {
+    const halfH = iso.TILE_HEIGHT / 2;
+    const diamondH = (layout.width + layout.height) * halfH;
+    this.world.x = this.scale.width / 2;
+    this.world.y = this.scale.height / 2 - diamondH / 2;
   }
 
   private buildSky(): void {
@@ -152,6 +164,7 @@ export class RoomScene extends Phaser.Scene {
 
   private applyLayout(layout: RoomLayoutSnapshot): void {
     this.clearLayout();
+    this.recenterWorld(layout);
     this.floor = drawFloor(this, this.world, layout);
     this.uninstallPicker = installTilePicker(this, this.world, layout);
 
@@ -181,19 +194,9 @@ export class RoomScene extends Phaser.Scene {
     this.prevLayout = null;
   }
 
-  private maybeFollowSelf(mySessionId: string | null): void {
-    if (this.isFollowingMe || !mySessionId) return;
-    const sprite = this.playerSync.getSpriteBySession(mySessionId);
-    if (sprite) {
-      this.cameras.main.startFollow(sprite.container, true, CAMERA.followLerp, CAMERA.followLerp);
-      this.isFollowingMe = true;
-    }
-  }
-
   private handleResize(): void {
     if (!this.world) return;
-    this.world.x = this.scale.width / 2;
-    this.world.y = this.scale.height / 4;
+    if (this.prevLayout) this.recenterWorld(this.prevLayout);
     this.ambient.setPosition(this.scale.width / 2, this.scale.height / 2);
     this.ambient.setSize(this.scale.width, this.scale.height);
     this.paintSky();
@@ -202,7 +205,6 @@ export class RoomScene extends Phaser.Scene {
 
   override update(_time: number, delta: number): void {
     this.playerSync.update(delta);
-    if (!this.isFollowingMe) this.maybeFollowSelf(this.prevMySessionId);
   }
 
   shutdown(): void {
@@ -224,7 +226,6 @@ export class RoomScene extends Phaser.Scene {
     this.floor = null;
     this.sun = null;
     this.prevLayout = null;
-    this.isFollowingMe = false;
   }
 }
 
