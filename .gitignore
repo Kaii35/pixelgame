@@ -33,7 +33,6 @@ yarn-error.log*
 keys/
 *.pem
 *.key
-!**/eslint-config/**
 
 # IDE / OS
 .vscode/*

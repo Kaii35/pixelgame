@@ -1,8 +1,11 @@
+import 'dotenv/config';
+
+import { createServer } from 'node:http';
+
 import { Server } from '@colyseus/core';
 import { monitor } from '@colyseus/monitor';
 import { WebSocketTransport } from '@colyseus/ws-transport';
 import express from 'express';
-import { createServer } from 'node:http';
 
 import { env } from './config/env';
 import { LobbyRoom } from './rooms/lobby.room';

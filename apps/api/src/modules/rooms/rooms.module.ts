@@ -1,8 +1,14 @@
 import { Module } from '@nestjs/common';
 
+import { RoomsController } from './rooms.controller';
+import { RoomsService } from './rooms.service';
+
 /**
- * RoomsModule — list, create, edit room metadata (not realtime state).
- * Fase 2+.
+ * RoomsModule — list and create rooms metadata (not realtime state).
  */
-@Module({})
+@Module({
+  controllers: [RoomsController],
+  providers: [RoomsService],
+  exports: [RoomsService],
+})
 export class RoomsModule {}

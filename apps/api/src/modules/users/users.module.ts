@@ -1,8 +1,15 @@
 import { Module } from '@nestjs/common';
 
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
+
 /**
- * UsersModule — GET /me, PATCH /me, public profile lookups.
- * Fase 1+.
+ * UsersModule — exposes the current user's private profile and a service
+ * for AuthService to create/find user rows.
  */
-@Module({})
+@Module({
+  controllers: [UsersController],
+  providers: [UsersService],
+  exports: [UsersService],
+})
 export class UsersModule {}

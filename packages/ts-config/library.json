@@ -7,9 +7,6 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "declaration": true,
-    "composite": false,
-    "outDir": "dist"
-  },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+    "composite": false
+  }
 }

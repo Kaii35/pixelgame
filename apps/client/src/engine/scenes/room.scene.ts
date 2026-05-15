@@ -1,47 +1,136 @@
-import { iso, room as roomCore } from '@pixelgame/game-core';
 import Phaser from 'phaser';
 
+import { useRoomStore, type RoomLayoutSnapshot } from '../../state/room.store';
+import { installTilePicker } from '../input/tile-picker';
+import { drawFloor } from '../systems/floor.renderer';
+import { PlayerSyncSystem } from '../systems/player-sync.system';
+
 /**
- * Programmatic placeholder scene: draws a 10x10 isometric floor with
- * Phaser graphics — no asset pipeline yet (Fase 3 will introduce sprites).
+ * Long-lived room scene. Owns the world container, floor graphics,
+ * tile picker, and the player-sync system. All inputs come from the
+ * room store; no direct network access here.
  */
 export class RoomScene extends Phaser.Scene {
+  private world!: Phaser.GameObjects.Container;
+  private floor: Phaser.GameObjects.Graphics | null = null;
+  private playerSync!: PlayerSyncSystem;
+  private uninstallPicker: (() => void) | null = null;
+  private unsubscribeStore: (() => void) | null = null;
+
+  private prevLayout: RoomLayoutSnapshot | null = null;
+  private prevMySessionId: string | null = null;
+  private lastSeenChatIndex = 0;
+  private isFollowingMe = false;
+
   constructor() {
     super('Room');
   }
 
-  override create(): void {
-    const layout = roomCore.buildEmptyLayout(10, 10);
-    const graphics = this.add.graphics({ lineStyle: { width: 1, color: 0x334155 } });
+  create(): void {
+    this.world = this.add.container(this.scale.width / 2, this.scale.height / 4);
+    this.playerSync = new PlayerSyncSystem(this, this.world);
 
-    const cx = this.scale.width / 2;
-    const cy = this.scale.height / 2;
-
-    for (let y = 0; y < layout.height; y++) {
-      for (let x = 0; x < layout.width; x++) {
-        const { sx, sy } = iso.tileToScreen({ x, y });
-        const px = cx + sx;
-        const py = cy + sy - (layout.height * iso.TILE_HEIGHT) / 2;
-
-        graphics.lineStyle(1, 0x334155, 1);
-        graphics.fillStyle(0x1f2937, 1);
-        graphics.beginPath();
-        graphics.moveTo(px, py);
-        graphics.lineTo(px + iso.TILE_WIDTH / 2, py + iso.TILE_HEIGHT / 2);
-        graphics.lineTo(px, py + iso.TILE_HEIGHT);
-        graphics.lineTo(px - iso.TILE_WIDTH / 2, py + iso.TILE_HEIGHT / 2);
-        graphics.closePath();
-        graphics.fillPath();
-        graphics.strokePath();
-      }
+    const initial = useRoomStore.getState();
+    if (initial.layout) {
+      this.applyLayout(initial.layout);
     }
+    this.playerSync.sync(initial.players);
+    this.lastSeenChatIndex = initial.chatHistory.length;
+    this.prevMySessionId = initial.mySessionId;
+    this.maybeFollowSelf(initial.mySessionId);
 
-    this.add
-      .text(16, 16, 'Phaser scene online — iso placeholder', {
-        fontFamily: 'monospace',
-        color: '#cbd5e1',
-        fontSize: '14px',
-      })
-      .setScrollFactor(0);
+    this.unsubscribeStore = useRoomStore.subscribe((state) => {
+      if (state.layout !== this.prevLayout) {
+        if (state.layout) {
+          this.applyLayout(state.layout);
+        } else {
+          this.clearLayout();
+        }
+      }
+      this.playerSync.sync(state.players);
+
+      if (state.chatHistory.length > this.lastSeenChatIndex) {
+        for (let i = this.lastSeenChatIndex; i < state.chatHistory.length; i++) {
+          const msg = state.chatHistory[i];
+          if (!msg) continue;
+          this.playerSync.getSpriteByUser(msg.authorId)?.showBubble(msg.body);
+        }
+        this.lastSeenChatIndex = state.chatHistory.length;
+      }
+
+      if (state.mySessionId !== this.prevMySessionId) {
+        this.prevMySessionId = state.mySessionId;
+        this.isFollowingMe = false;
+      }
+      this.maybeFollowSelf(state.mySessionId);
+    });
+
+    this.scale.on(Phaser.Scale.Events.RESIZE, this.handleResize, this);
+
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.shutdown, this);
+    this.events.once(Phaser.Scenes.Events.DESTROY, this.shutdown, this);
+  }
+
+  private applyLayout(layout: RoomLayoutSnapshot): void {
+    this.clearLayout();
+    this.floor = drawFloor(this, this.world, layout);
+    this.uninstallPicker = installTilePicker(this, this.world, layout);
+    this.prevLayout = layout;
+  }
+
+  private clearLayout(): void {
+    if (this.uninstallPicker) {
+      this.uninstallPicker();
+      this.uninstallPicker = null;
+    }
+    if (this.floor) {
+      this.floor.destroy();
+      this.floor = null;
+    }
+    this.prevLayout = null;
+  }
+
+  private maybeFollowSelf(mySessionId: string | null): void {
+    if (this.isFollowingMe || !mySessionId) return;
+    const sprite = this.playerSync.getSpriteBySession(mySessionId);
+    if (sprite) {
+      this.cameras.main.startFollow(sprite.container, true, 0.15, 0.15);
+      this.isFollowingMe = true;
+    }
+  }
+
+  private handleResize(): void {
+    if (!this.world) return;
+    this.world.x = this.scale.width / 2;
+    this.world.y = this.scale.height / 4;
+  }
+
+  override update(_time: number, delta: number): void {
+    this.playerSync.update(delta);
+    // Late camera follow attempt for clients that join before their sprite exists.
+    if (!this.isFollowingMe) {
+      this.maybeFollowSelf(this.prevMySessionId);
+    }
+  }
+
+  shutdown(): void {
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+      this.unsubscribeStore = null;
+    }
+    if (this.uninstallPicker) {
+      this.uninstallPicker();
+      this.uninstallPicker = null;
+    }
+    this.scale.off(Phaser.Scale.Events.RESIZE, this.handleResize, this);
+    if (this.floor) {
+      this.floor.destroy();
+      this.floor = null;
+    }
+    if (this.playerSync) {
+      this.playerSync.destroyAll();
+    }
+    this.prevLayout = null;
+    this.isFollowingMe = false;
   }
 }

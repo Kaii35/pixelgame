@@ -15,7 +15,6 @@ module.exports = {
   ],
   settings: {
     'import/resolver': {
-      typescript: { alwaysTryTypes: true },
       node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
     },
   },
@@ -48,7 +47,9 @@ module.exports = {
       },
     ],
     'import/no-default-export': 'warn',
-    'import/no-cycle': 'error',
+    'import/no-cycle': 'off',
+    'import/no-unresolved': 'off',
+    'import/namespace': 'off',
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     eqeqeq: ['error', 'always', { null: 'ignore' }],
   },

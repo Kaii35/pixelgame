@@ -1,13 +1,16 @@
-import { z, type ZodSchema } from 'zod';
+import { z, type ZodTypeAny } from 'zod';
 
 /**
  * Parse process.env with a Zod schema and throw a clear error on failure.
  * Apps define their own schema and call this once at boot.
+ *
+ * Uses z.output<S> so schemas declaring `.default(...)` resolve to a fully
+ * populated type (no `| undefined` leaks for fields with defaults).
  */
-export const loadEnv = <T>(
-  schema: ZodSchema<T>,
+export const loadEnv = <S extends ZodTypeAny>(
+  schema: S,
   source: Record<string, string | undefined> = process.env,
-): T => {
+): z.output<S> => {
   const result = schema.safeParse(source);
   if (!result.success) {
     const issues = result.error.issues

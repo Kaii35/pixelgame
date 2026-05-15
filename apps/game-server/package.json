@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@colyseus/core": "^0.16.0",
+    "dotenv": "^16.4.5",
     "@colyseus/monitor": "^0.16.0",
     "@colyseus/redis-driver": "^0.16.0",
     "@colyseus/redis-presence": "^0.16.0",

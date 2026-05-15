@@ -5,7 +5,7 @@ export class BootScene extends Phaser.Scene {
     super('Boot');
   }
 
-  override create(): void {
+  create(): void {
     this.scene.start('Room');
   }
 }

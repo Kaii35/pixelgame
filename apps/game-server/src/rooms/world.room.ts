@@ -1,3 +1,4 @@
+import { Room, type Client } from '@colyseus/core';
 import {
   CLIENT_MESSAGE,
   ChatSendSchema,
@@ -6,11 +7,13 @@ import {
   TileVec,
   WorldRoomState,
 } from '@pixelgame/networking';
-import { Room, type Client } from '@colyseus/core';
 
 import { verifyAccessToken, type VerifiedToken } from '../auth/jwt-verifier';
+import { defaultLayout } from '../domain/world-layout';
 import { ChatSystem } from '../systems/chat.system';
 import { MovementSystem } from '../systems/movement.system';
+
+import type { RoomLayout } from '@pixelgame/shared-types';
 
 interface JoinOptions {
   accessToken: string;
@@ -20,18 +23,21 @@ interface JoinOptions {
 const TICK_HZ = 20;
 
 export class WorldRoom extends Room<WorldRoomState> {
-  maxClients = 20;
+  override maxClients = 20;
 
   private movement!: MovementSystem;
   private chat!: ChatSystem;
+  private layout!: RoomLayout;
 
   override onCreate(options: { roomId?: string; name?: string }): void {
     this.setState(new WorldRoomState());
     this.state.roomId = options.roomId ?? this.roomId;
     this.state.name = options.name ?? 'Default room';
 
-    this.movement = new MovementSystem(this.state);
-    this.chat = new ChatSystem(this.state);
+    this.layout = defaultLayout();
+
+    this.movement = new MovementSystem(this.state, this.layout);
+    this.chat = new ChatSystem(this.state, (type, payload) => this.broadcast(type, payload));
 
     this.onMessage(CLIENT_MESSAGE.MOVE_INTENT, (client, payload) => {
       const parsed = MoveIntentSchema.safeParse(payload);
@@ -44,7 +50,7 @@ export class WorldRoom extends Room<WorldRoomState> {
       if (!parsed.success) return;
       const author = client.userData as VerifiedToken | undefined;
       if (!author) return;
-      this.chat.broadcast(client, author, parsed.data.body);
+      this.chat.broadcast(author, parsed.data.body, client.sessionId);
     });
 
     this.setSimulationInterval(this.tick.bind(this), 1000 / TICK_HZ);
@@ -60,12 +66,14 @@ export class WorldRoom extends Room<WorldRoomState> {
     const player = new PlayerState();
     player.userId = auth.userId;
     player.username = auth.username;
-    player.position = new TileVec().assign({ x: 0, y: 0 });
+    player.position = new TileVec().assign({ x: this.layout.spawn.x, y: this.layout.spawn.y });
     player.lastUpdate = Date.now();
     this.state.players.set(client.sessionId, player);
   }
 
   override onLeave(client: Client): void {
+    this.movement.onLeave(client.sessionId);
+    this.chat.onLeave(client.sessionId);
     this.state.players.delete(client.sessionId);
   }
 
