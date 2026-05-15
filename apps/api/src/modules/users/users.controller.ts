@@ -4,8 +4,8 @@ import { Controller, Get, NotFoundException, Req, UseGuards } from '@nestjs/comm
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 import { toPrivateUser } from './lib/user-mappers';
+import { UsersService } from './users.service';
 
-import type { UsersService } from './users.service';
 import type { PrivateUser } from '@pixelgame/shared-types';
 import type { Request } from 'express';
 

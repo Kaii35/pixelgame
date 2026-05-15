@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import { PrismaService } from '../../database/prisma.service';
 
-import type { PrismaService } from '../../database/prisma.service';
 import type { RoomLayout } from '@pixelgame/shared-types';
-import type { Prisma , Room } from '@prisma/client';
+import type { Prisma, Room } from '@prisma/client';
 
 
 @Injectable()

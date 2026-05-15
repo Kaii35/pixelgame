@@ -363,6 +363,9 @@ importers:
       '@pixelgame/ts-config':
         specifier: workspace:*
         version: link:../ts-config
+      tsup:
+        specifier: ^8.3.0
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.14)(tsx@4.22.0)(typescript@5.9.3)(yaml@2.9.0)
       typescript:
         specifier: ^5.6.2
         version: 5.9.3
@@ -407,6 +410,9 @@ importers:
       '@pixelgame/ts-config':
         specifier: workspace:*
         version: link:../ts-config
+      tsup:
+        specifier: ^8.3.0
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.14)(tsx@4.22.0)(typescript@5.9.3)(yaml@2.9.0)
       typescript:
         specifier: ^5.6.2
         version: 5.9.3
@@ -423,6 +429,9 @@ importers:
       '@pixelgame/ts-config':
         specifier: workspace:*
         version: link:../ts-config
+      tsup:
+        specifier: ^8.3.0
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.14)(tsx@4.22.0)(typescript@5.9.3)(yaml@2.9.0)
       typescript:
         specifier: ^5.6.2
         version: 5.9.3

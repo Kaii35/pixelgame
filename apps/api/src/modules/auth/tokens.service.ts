@@ -1,14 +1,13 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
-
+import { JwtService } from '@nestjs/jwt';
 
 
 import { loadApiEnv } from '../../config/env.validation';
 
 import { parseTtlSeconds } from './lib/parse-ttl';
 
-import type { JwtService } from '@nestjs/jwt';
 import type { User } from '@prisma/client';
 
 export interface MintedAccessToken {

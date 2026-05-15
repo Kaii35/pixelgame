@@ -17,8 +17,10 @@ import {
   type RegisterRequest,
 } from '@pixelgame/shared-types';
 
+
 import { loadApiEnv } from '../../config/env.validation';
 
+import { AuthService } from './auth.service';
 import { ZodValidationPipe } from './dto/zod-validation.pipe';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import {
@@ -28,7 +30,6 @@ import {
   type CookieEnv,
 } from './lib/cookies';
 
-import type { AuthService } from './auth.service';
 import type { Request, Response } from 'express';
 
 interface AuthResponseBody {

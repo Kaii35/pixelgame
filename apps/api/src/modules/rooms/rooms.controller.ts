@@ -1,6 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 
-import type { RoomsService } from './rooms.service';
+import { RoomsService } from './rooms.service';
+
 import type { RoomSummary } from '@pixelgame/shared-types';
 import type { Room } from '@prisma/client';
 

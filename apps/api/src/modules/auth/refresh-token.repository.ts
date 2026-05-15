@@ -1,8 +1,8 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 
-import type { TokensService } from './tokens.service';
-import type { PrismaService } from '../../database/prisma.service';
+import { PrismaService } from '../../database/prisma.service';
 
+import { TokensService } from './tokens.service';
 
 export interface RotationResult {
   userId: string;

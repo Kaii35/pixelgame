@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
 
+import { PrismaService } from '../../database/prisma.service';
+
 import type { UserWithAvatar } from './lib/user-mappers';
-import type { PrismaService } from '../../database/prisma.service';
 import type { User } from '@prisma/client';
 
 export interface CreateUserInput {

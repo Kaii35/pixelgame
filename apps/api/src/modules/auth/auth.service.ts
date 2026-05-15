@@ -2,13 +2,12 @@ import { ConflictException, Injectable, Logger, UnauthorizedException } from '@n
 import { Prisma } from '@prisma/client';
 import * as argon2 from 'argon2';
 
-
 import { toPublicUser } from '../users/lib/user-mappers';
+import { UsersService } from '../users/users.service';
 
+import { RefreshTokenRepository } from './refresh-token.repository';
+import { TokensService } from './tokens.service';
 
-import type { RefreshTokenRepository } from './refresh-token.repository';
-import type { TokensService } from './tokens.service';
-import type { UsersService } from '../users/users.service';
 import type { LoginRequest, PublicUser, RegisterRequest } from '@pixelgame/shared-types';
 import type { User } from '@prisma/client';
 

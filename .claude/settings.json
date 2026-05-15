@@ -1,5 +1,22 @@
 {
   "permissions": {
-    "allow": ["Bash(git reset *)", "Bash(grep -iE '\\(\\\\.env$|/\\\\.env$|\\\\.pem$|^keys/\\)')"]
+    "allow": [
+      "Bash(git reset *)",
+      "Bash(grep -iE '\\(\\\\.env$|/\\\\.env$|\\\\.pem$|^keys/\\)')",
+      "PowerShell(git push 2>&1)",
+      "PowerShell(\"---push---\")",
+      "Bash(pnpm dev *)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 5173,3001,2567 -State Listen -ErrorAction SilentlyContinue | Select-Object LocalPort, OwningProcess, @{N='Process';E={\\(Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue\\).ProcessName}} | Format-Table -AutoSize)",
+      "PowerShell(Get-Process -Name node -ErrorAction SilentlyContinue | Select-Object Id, StartTime, @{N='RunTimeMin';E={[math]::Round\\(\\(\\(Get-Date\\) - $_.StartTime\\).TotalMinutes,1\\)}} | Format-Table -AutoSize)",
+      "PowerShell(Stop-Process -Id 17304 -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 1; Get-NetTCPConnection -LocalPort 5173,3001,2567 -State Listen -ErrorAction SilentlyContinue | Format-Table LocalPort, OwningProcess -AutoSize; \"---remaining-node-after-our-work-started-10am---\"; Get-Process -Name node -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -gt \\(Get-Date \"10:00:00\"\\) } | Measure-Object | Select-Object -ExpandProperty Count)",
+      "PowerShell(Get-Process -Name node -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -gt \\(Get-Date \"10:00:00\"\\) } | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }; Start-Sleep -Seconds 1; \"---node-procs-now---\"; Get-Process -Name node -ErrorAction SilentlyContinue | Measure-Object | Select-Object -ExpandProperty Count; \"---ports-clear---\"; Get-NetTCPConnection -LocalPort 5173,3001,2567 -State Listen -ErrorAction SilentlyContinue | Format-Table -AutoSize)",
+      "PowerShell(Get-Process -Name node -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -gt \\(Get-Date \"10:25:00\"\\) } | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }; Start-Sleep -Seconds 1; \"---ports-clear---\"; Get-NetTCPConnection -LocalPort 5173,3001,2567 -State Listen -ErrorAction SilentlyContinue | Format-Table -AutoSize; \"---OK-if-empty---\")",
+      "PowerShell(Get-Process -Name node -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -gt \\(Get-Date \"10:30:00\"\\) } | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }; Start-Sleep -Seconds 1; \"---ports---\"; Get-NetTCPConnection -LocalPort 5173,3001,2567 -State Listen -ErrorAction SilentlyContinue | Format-Table -AutoSize)",
+      "PowerShell(Get-Process -Name node -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -gt \\(Get-Date \"10:40:00\"\\) } | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }; Start-Sleep -Seconds 1; \"---ports---\"; Get-NetTCPConnection -LocalPort 5173,3001,2567 -State Listen -ErrorAction SilentlyContinue | Format-Table -AutoSize)",
+      "Bash(curl -s http://localhost:3001/api/v1/health)",
+      "Bash(curl -s -o /dev/null -w \"Vite HTTP %{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(curl -s -o /dev/null -w \"rooms HTTP %{http_code}\\\\n\" http://localhost:3001/api/v1/rooms)",
+      "PowerShell(Get-Process -Name node -ErrorAction SilentlyContinue | Where-Object { $_.StartTime -gt \\(Get-Date \"10:40:00\"\\) } | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }; Start-Sleep -Seconds 1; \"ok\")"
+    ]
   }
 }
